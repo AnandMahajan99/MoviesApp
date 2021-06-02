@@ -1,7 +1,7 @@
 import React from 'react'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 
-import { NavBar } from '../components'
+import { NavBar, Home } from '../components'
 import { MoviesList, MoviesInsert, MoviesUpdate } from '../pages'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
@@ -11,6 +11,7 @@ function App() {
         <Router>
             <NavBar />
             <Switch>
+                <Route path='/' exact component={Home}></Route>
                 <Route path="/movies/list" exact component={MoviesList} />
                 <Route path="/movies/create" exact component={MoviesInsert} />
                 <Route

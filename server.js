@@ -23,7 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
-app.use(express.static(path.join(__dirname, "client", "build")))
+// app.use(express.static(path.join(__dirname, "client", "build")))
 
 app.use('/api/v1/movies', movieRouter);
 
@@ -34,9 +34,16 @@ app.use('/api/v1/movies', movieRouter);
 //     });
 // })
 
+// app.get("*", (req, res) => {
+//     res.sendFile(path.join(__dirname, "client", "build", "index.html"));
+// });
+
 app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "client", "build", "index.html"));
-});
+    res.json({
+        status: "Failed",
+        message: "No such path exist"
+    });
+})
 
 // start the server
 app.listen(PORT, () => {

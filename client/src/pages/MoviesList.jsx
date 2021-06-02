@@ -1,90 +1,142 @@
-import React, { Component } from 'react'
-import ReactTable from 'react-table'
-import apis from '../api'
-
-import styled from 'styled-components'
-
+import React, { Component } from "react";
+import styled from "styled-components";
+import ReactTable, { useRowSelect } from "react-table";
+import Table from "./Table.js";
+import "react-table/index.js";
+import api from "../api";
 // import 'react-table/react-table.css'
-import 'react-table/index.js'
-import Table from './Table.js'
 
 const Wrapper = styled.div`
-    padding: 0 60px 60px 60px;
-`
+  padding: 0 60px 60px 60px;
+`;
 
-class MoviesList extends Component {
-    constructor(props) {
-        super(props)
-        this.state = {
-            movies: [],
-            columns: [],
-            isLoading: false,
-        }
+class DeleteMovie extends Component {
+  deleteMovie = (event) => {
+    event.preventDefault();
+
+    if (
+      window.confirm(
+        `Do tou want to delete the movie "${this.props.data.title}" permanently?`
+      )
+    ) {
+      api.deleteMovieById(this.props.data._id);
+      window.location.reload();
     }
+  };
 
-    componentDidMount = async () => {
-        this.setState({ isLoading: true })
+  render() {
+    return <button className="btn btn-outline-danger" onClick={this.deleteMovie}>Delete</button>;
+  }
+}
 
-        const movies = await apis.getAllMovies();
-        console.log(movies);
-            this.setState({
-                movies: movies.data.data,
-                isLoading: false,
-            })
-    }
+class UpdateMovie extends Component{
+
+    updateMovie = (event) => {
+        window.location = `/movies/update/${this.props.data._id}`;
+    };
 
     render() {
-        const { movies, isLoading } = this.state
-        console.log('TCL: MoviesList -> render -> movies', movies)
-
-        const columns = [
-            {
-                Header: 'ID',
-                accessor: '_id',
-                filterable: true,
-            },
-            {
-                Header: 'Name',
-                accessor: 'name',
-                filterable: true,
-            },
-            {
-                Header: 'Rating',
-                accessor: 'rating',
-                filterable: true,
-            },
-            // {
-            //     Header: 'Time',
-            //     accessor: 'time',
-            //     // Cell: props => <span>{props.value.join(' / ')}</span>,
-            // },
-        ]
-
-        let showTable = true
-        if (!movies.length) {
-            showTable = false
-        }
-
-        return (
-            // <div>HEllo{ movies.map(el => <div><p>{el.name}</p><p>{ el.rating }</p><p>{ el.released_date }</p></div>)
-                // }</div>
-            // <Wrapper>
-                // {showTable && (
-                    // <ReactTable
-                    //     data={movies}
-                    //     columns={columns}
-                    //     loading={isLoading}
-                    //     defaultPageSize={10}
-                    //     showPageSizeOptions={true}
-                    //     minRows={0}
-                    // />
-                // )}
-            // </Wrapper>
-            <div className="container">
-                <Table columns={columns} data={movies} />
-            </div>
-        )
+        return <button className="btn btn-outline-success" onClick={this.updateMovie}>Update</button>
     }
 }
 
-export default MoviesList
+class MoviesList extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      movies: [],
+      columns: [],
+      isLoading: false,
+    };
+  }
+
+  componentDidMount = async () => {
+    this.setState({ isLoading: true });
+    const movies = await api.getAllMovies();
+    this.setState({
+      movies: movies.data.data,
+      isLoading: false,
+    });
+  };
+
+  render() {
+    const { movies, isLoading } = this.state;
+
+    const columns = [
+      {
+        Header: "Poster",
+        accessor: "poster",
+        Cell: (props) => {
+          return (
+            <img
+              className="img-responsive"
+              height="150 px"
+              src={props.value}
+            ></img>
+          );
+        },
+      },
+      {
+        Header: "Title",
+        accessor: "title",
+        filterable: true,
+      },
+      {
+        Header: "Released Date",
+        accessor: "release_date",
+        Cell: (props) => {
+          //props.value will contain your date
+          //you can convert your date here
+          const d = new Date(props.value);
+          const custom_date = d.toDateString();
+          return <>{custom_date}</>;
+        },
+      },
+      {
+        Header: "Genres",
+        accessor: "genres",
+        filterable: false,
+        Cell: (props) => {
+          return props.value.map((el) => (
+            <div>
+              <span>{el}</span>
+              <br></br>
+            </div>
+          ));
+        },
+      },
+      {
+        Header: "",
+        id: "update",
+        accessor: (str) => "delete",
+        Cell: (props) => {
+          return (
+            <span>
+              <UpdateMovie data={props.row.original} />
+            </span>
+          );
+        },
+      },
+      {
+        Header: "",
+        id: "delete",
+        accessor: (str) => "delete",
+        Cell: (props) => {
+          return (
+            <span>
+              <DeleteMovie data={props.row.original} />
+            </span>
+          );
+        },
+      },
+    ];
+
+    return (
+      <div className="container mt-4" id="movies">
+        <Table columns={columns} data={movies} />
+      </div>
+    );
+  }
+}
+
+export default MoviesList;
